@@ -752,7 +752,18 @@ const lbCounter = document.getElementById("lbCounter");
 const lbSpinner = document.getElementById("lbSpinner");
 let currentIdx  = 0;
 
-/* ── Slow-connection detection (serve 720p on 2G/3G) ── */
+/* ── Strip non-encoded multi-res sources — only the original .mp4 exists right now.
+   Remove the 1440p/1080p/720p/webm sources so the browser loads instantly
+   without firing 4 failed network requests first. Re-add them once encoded. ── */
+document.querySelectorAll(".reel-video").forEach(v => {
+  const srcs = [...v.querySelectorAll("source")];
+  if (srcs.length > 1) {
+    srcs.slice(0, -1).forEach(s => s.remove());
+    v.load();
+  }
+});
+
+/* ── Slow-connection detection ── */
 if (navigator.connection && /(2g|slow-2g|3g)/.test(navigator.connection.effectiveType)) {
   document.documentElement.classList.add("slow-connection");
 }
@@ -860,13 +871,12 @@ function openLightbox(idx) {
   currentIdx = idx;
   const reel = reels[idx];
 
-  /* Prefer highest quality source for lightbox */
+  /* Load original source directly (swap to HD path once encoded) */
   const base = reel.dataset.src || "";
-  const hd   = base.replace(/\.mp4$/, "-1080p.mp4");
-  lbVideo.src = "";
-  lbVideo.preload = "metadata";
+  lbVideo.src     = "";
+  lbVideo.preload = "auto";
   lbVideo.muted   = false;
-  lbVideo.src     = hd || base;
+  lbVideo.src     = base;
 
   lbCat.textContent     = reel.dataset.cat || "";
   lbTitle.textContent   = reel.dataset.title || "";
