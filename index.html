@@ -85,7 +85,7 @@ nav{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-
 .reels-wrap{padding:0 0 5rem;position:relative;overflow:hidden}
 .reels-track{position:relative;height:510px;display:flex;align-items:center;justify-content:center;perspective:1200px}
 
-.reel{position:absolute;width:240px;cursor:pointer;display:flex;flex-direction:column;gap:0;transition:transform .55s cubic-bezier(.22,1,.36,1),filter .55s cubic-bezier(.22,1,.36,1),opacity .55s cubic-bezier(.22,1,.36,1);will-change:transform,filter,opacity}
+.reel{position:absolute;width:240px;cursor:pointer;display:flex;flex-direction:column;gap:0;transition:transform .44s cubic-bezier(.4,0,.2,1),opacity .44s cubic-bezier(.4,0,.2,1),filter .44s cubic-bezier(.4,0,.2,1);will-change:transform,opacity;contain:layout style;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .reel--active:hover .reel-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .reel-frame{position:relative;width:240px;height:427px;border-radius:18px 18px 0 0;overflow:hidden;background:#1a1815;box-shadow:0 12px 36px rgba(31,28,24,.18),0 2px 8px rgba(31,28,24,.08),0 0 0 1px rgba(31,28,24,.06);transition:box-shadow .4s;transform:translateZ(0);will-change:transform;contain:layout style paint;isolation:isolate}
 .reel:hover .reel-frame{box-shadow:0 24px 56px rgba(31,28,24,.28),0 6px 16px rgba(31,28,24,.12),0 0 0 1px rgba(31,28,24,.1)}
@@ -810,73 +810,96 @@ if (navigator.connection && /(2g|slow-2g|3g)/.test(navigator.connection.effectiv
   document.documentElement.classList.add("slow-connection");
 }
 
-/* ── Set production attributes + preload metadata on all carousel videos ── */
-reels.forEach((reel) => {
+/* ── Set production attributes; only preload cards near start (idx 2 ± 2) ── */
+const CAROUSEL_START = 2;
+reels.forEach((reel, i) => {
   const v = reel.querySelector(".reel-video");
   if (!v) return;
   v.setAttribute("disablepictureinpicture", "");
   v.setAttribute("disableremoteplayback", "");
   v.setAttribute("x-webkit-airplay", "deny");
   v.setAttribute("aria-label", (reel.dataset.title || "Video preview") + " preview video");
-  v.preload = "metadata";
+  v.preload = Math.abs(i - CAROUSEL_START) <= 2 ? "metadata" : "none";
 });
 
 /* ── Carousel state ── */
-let carIdx = 0;
+let carIdx    = CAROUSEL_START; // start at 3rd card — videos visible on both sides
+let prevCarIdx = -1;
+let navLocked  = false;
 
 function getOffsets() {
   const w = window.innerWidth;
-  return w < 480  ? { o1: 185, o2: 305, r1: 8  } :
-         w < 768  ? { o1: 240, o2: 395, r1: 10 } :
-                    { o1: 292, o2: 488, r1: 13  };
+  return w < 480 ? { o1: 185, o2: 305, r1: 5 } :
+         w < 768 ? { o1: 240, o2: 395, r1: 6 } :
+                   { o1: 288, o2: 476, r1: 8  };
+}
+
+function upgradePreload(idx) {
+  const lo = Math.max(0, idx - 2), hi = Math.min(reels.length - 1, idx + 2);
+  for (let i = lo; i <= hi; i++) {
+    const v = reels[i].querySelector(".reel-video");
+    if (v && v.preload === "none") { v.preload = "metadata"; v.load(); }
+  }
 }
 
 function positionCards() {
   const { o1, o2, r1 } = getOffsets();
+
+  /* Only touch play/pause when the active card actually changes */
+  if (prevCarIdx !== carIdx) {
+    const oldV = prevCarIdx >= 0 ? reels[prevCarIdx]?.querySelector(".reel-video") : null;
+    const newV = reels[carIdx]?.querySelector(".reel-video");
+    if (oldV) { oldV.pause(); oldV.currentTime = 0; }
+    if (newV)   newV.play().catch(() => {});
+  }
+
   reels.forEach((card, i) => {
     const off = i - carIdx;
     const abs = Math.abs(off);
-    const v   = card.querySelector(".reel-video");
     const mb  = card.querySelector(".reel-mute");
-    let tx, sc, bl, br, op, zi;
+    let tx, sc, br, op, zi;
 
     if (off === 0) {
-      [tx, sc, bl, br, op, zi] = [0, 1, 0, 1, 1, 10];
+      [tx, sc, br, op, zi] = [0, 1, 1, 1, 10];
       card.classList.add("reel--active");
       if (mb) mb.style.opacity = "1";
-      v.play().catch(() => {});
     } else if (abs === 1) {
       tx = off > 0 ? o1 : -o1;
-      [sc, bl, br, op, zi] = [0.76, 3, 0.52, 1, 7];
+      [sc, br, op, zi] = [0.8, 0.55, 1, 7];
       card.classList.remove("reel--active");
       if (mb) mb.style.opacity = "0";
-      v.pause(); v.currentTime = 0;
     } else if (abs === 2) {
       tx = off > 0 ? o2 : -o2;
-      [sc, bl, br, op, zi] = [0.6, 5, 0.28, 0.85, 4];
+      [sc, br, op, zi] = [0.64, 0.32, 0.85, 4];
       card.classList.remove("reel--active");
       if (mb) mb.style.opacity = "0";
-      v.pause(); v.currentTime = 0;
     } else {
       tx = off > 0 ? o2 + 160 : -(o2 + 160);
-      [sc, bl, br, op, zi] = [0.5, 8, 0.1, 0, 1];
+      [sc, br, op, zi] = [0.5, 0.15, 0, 1];
       card.classList.remove("reel--active");
       if (mb) mb.style.opacity = "0";
-      v.pause(); v.currentTime = 0;
     }
+
     const ry = off === 0 ? 0 : off > 0 ? -r1 : r1;
-    card.style.transform     = `translateX(${tx}px) scale(${sc}) rotateY(${ry}deg)`;
-    card.style.filter        = `blur(${bl}px) brightness(${br})`;
+    card.style.transform     = `translate3d(${tx}px,0,0) scale(${sc}) rotateY(${ry}deg)`;
+    card.style.filter        = `brightness(${br})`;
     card.style.opacity       = op;
     card.style.zIndex        = zi;
     card.style.pointerEvents = abs <= 2 ? "auto" : "none";
   });
+
   document.querySelectorAll(".carousel-dot").forEach((d, i) =>
     d.classList.toggle("active", i === carIdx));
+
+  prevCarIdx = carIdx;
 }
 
 function carNav(dir) {
+  if (navLocked) return;
+  navLocked = true;
+  setTimeout(() => { navLocked = false; }, 400);
   carIdx = (carIdx + dir + reels.length) % reels.length;
+  upgradePreload(carIdx);
   positionCards();
 }
 
@@ -892,7 +915,7 @@ offscreenObs.observe(document.querySelector(".reels-wrap"));
 reels.forEach((reel, i) => {
   reel.addEventListener("click", () => {
     if (i === carIdx) openLightbox(i);
-    else { carIdx = i; positionCards(); }
+    else { carIdx = i; upgradePreload(i); positionCards(); }
   });
 });
 
@@ -920,7 +943,7 @@ reels.forEach((_, i) => {
   const d = document.createElement("button");
   d.className = "carousel-dot";
   d.setAttribute("aria-label", `Video ${i + 1}`);
-  d.addEventListener("click", () => { carIdx = i; positionCards(); });
+  d.addEventListener("click", () => { carIdx = i; upgradePreload(i); positionCards(); });
   dotsEl.appendChild(d);
 });
 
