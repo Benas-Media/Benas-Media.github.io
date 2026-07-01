@@ -82,13 +82,11 @@ nav{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-
 .section-count b{font-style:normal;font-family:var(--sans);font-size:32px;display:block;color:var(--ink);font-weight:300;line-height:1}
 
 /* ============ REELS ============ */
-.reels-wrap{padding:0 2.5rem 6rem;position:relative}
-.reels-track{display:flex;gap:24px;overflow-x:auto;padding:2rem 0 2.5rem;scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:x mandatory;scroll-padding:0 2.5rem}
-.reels-track::-webkit-scrollbar{display:none}
-.reels-track::after{content:"";flex:0 0 1rem}
+.reels-wrap{padding:0 0 5rem;position:relative;overflow:hidden}
+.reels-track{position:relative;height:510px;display:flex;align-items:center;justify-content:center;perspective:1200px}
 
-.reel{flex:0 0 240px;scroll-snap-align:start;cursor:pointer;display:flex;flex-direction:column;gap:0;transition:transform .4s cubic-bezier(.2,0,.2,1)}
-.reel:hover{transform:translateY(-8px)}
+.reel{position:absolute;width:240px;cursor:pointer;display:flex;flex-direction:column;gap:0;transition:transform .55s cubic-bezier(.22,1,.36,1),filter .55s cubic-bezier(.22,1,.36,1),opacity .55s cubic-bezier(.22,1,.36,1);will-change:transform,filter,opacity}
+.reel--active:hover .reel-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .reel-frame{position:relative;width:240px;height:427px;border-radius:18px 18px 0 0;overflow:hidden;background:#1a1815;box-shadow:0 12px 36px rgba(31,28,24,.18),0 2px 8px rgba(31,28,24,.08),0 0 0 1px rgba(31,28,24,.06);transition:box-shadow .4s;transform:translateZ(0);will-change:transform;contain:layout style paint;isolation:isolate}
 .reel:hover .reel-frame{box-shadow:0 24px 56px rgba(31,28,24,.28),0 6px 16px rgba(31,28,24,.12),0 0 0 1px rgba(31,28,24,.1)}
 .reel-video{width:100%;height:100%;object-fit:cover;display:block;transform:translateZ(0);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;image-rendering:-webkit-optimize-contrast;opacity:1;transition:opacity .4s cubic-bezier(.22,1,.36,1)}
@@ -103,12 +101,16 @@ nav{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-
 .reel-num{font-family:var(--serif);font-size:13px;font-style:italic;color:var(--blue-deep);font-weight:400;flex-shrink:0}
 .reel-title{font-family:var(--serif);font-size:14.5px;font-weight:400;color:var(--ink);letter-spacing:-.01em;line-height:1.2}
 
-.reels-nav{display:flex;gap:10px;justify-content:center;margin-top:1rem}
-.reels-nav-btn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(31,28,24,.12);background:var(--cream);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
-.reels-nav-btn:hover{background:var(--ink);color:var(--cream);border-color:var(--ink)}
-.reels-nav-btn svg{width:16px;height:16px}
-.reels-hint{position:absolute;top:0;right:2.5rem;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--light);display:flex;align-items:center;gap:8px}
-.reels-hint svg{width:14px;height:14px}
+.reel-mute{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.52);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;z-index:20;pointer-events:auto}
+.reel-mute svg{width:16px;height:16px}
+.carousel-arrow{position:absolute;top:calc(50% - 57px);transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:var(--cream);border:1.5px solid rgba(31,28,24,.12);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:30;transition:background .25s,color .25s,border-color .25s;box-shadow:0 4px 20px rgba(31,28,24,.12)}
+.carousel-arrow:hover{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.carousel-arrow svg{width:18px;height:18px}
+.carousel-arrow-prev{left:2rem}
+.carousel-arrow-next{right:2rem}
+.carousel-dots{display:flex;gap:6px;justify-content:center;padding-top:1.5rem}
+.carousel-dot{width:6px;height:6px;border-radius:3px;background:rgba(31,28,24,.18);transition:all .35s cubic-bezier(.22,1,.36,1);cursor:pointer;border:none;padding:0}
+.carousel-dot.active{width:20px;background:var(--ink)}
 
 /* ============ STATS ============ */
 .stats-section{background:var(--ink);color:var(--cream);padding:5rem 2.5rem;margin:2rem 2.5rem;border-radius:24px;position:relative;overflow:hidden}
@@ -200,8 +202,11 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
   .hero-meta-right{display:none}
   .marquee span{font-size:24px}
   .section{padding:5rem 1.5rem 3rem}
-  .reels-wrap{padding:0 1.5rem 4rem}
-  .reels-hint{right:1.5rem;font-size:9px}
+  .reels-wrap{padding:0 0 4rem}
+  .reels-track{height:480px}
+  .carousel-arrow{width:40px;height:40px}
+  .carousel-arrow-prev{left:.5rem}
+  .carousel-arrow-next{right:.5rem}
   .services-grid{grid-template-columns:1fr 1fr}
   .process-list{grid-template-columns:1fr 1fr}
   .stats-section{margin:2rem 1.5rem;padding:3rem 1.5rem}
@@ -333,10 +338,9 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
   ═══════════════════════════════════════════════════════════
 -->
 <div class="reels-wrap" style="margin-top:-3rem">
-  <div class="reels-hint">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-    Scroll · click to play
-  </div>
+  <button class="carousel-arrow carousel-arrow-prev" id="carPrev" aria-label="Previous video">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  </button>
   <div class="reels-track" id="reelsTrack">
       <div class="reel" data-idx="0" data-cat="Brand Story" data-title="Entrepreneur Story" data-src="videos/kohen.mp4">
         <div class="reel-frame">
@@ -609,14 +613,10 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
         </div>
       </div>
   </div>
-  <div class="reels-nav">
-    <button class="reels-nav-btn" onclick="scrollReels(-1)" aria-label="Previous">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </button>
-    <button class="reels-nav-btn" onclick="scrollReels(1)" aria-label="Next">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-    </button>
-  </div>
+  <button class="carousel-arrow carousel-arrow-next" id="carNext" aria-label="Next video">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+  </button>
+  <div class="carousel-dots" id="carouselDots"></div>
 </div>
 
 <!-- STATS -->
@@ -810,83 +810,137 @@ if (navigator.connection && /(2g|slow-2g|3g)/.test(navigator.connection.effectiv
   document.documentElement.classList.add("slow-connection");
 }
 
-/* ── Set production attributes + aria labels on all reel videos ── */
-reels.forEach((reel, i) => {
+/* ── Set production attributes + preload metadata on all carousel videos ── */
+reels.forEach((reel) => {
   const v = reel.querySelector(".reel-video");
   if (!v) return;
   v.setAttribute("disablepictureinpicture", "");
   v.setAttribute("disableremoteplayback", "");
   v.setAttribute("x-webkit-airplay", "deny");
   v.setAttribute("aria-label", (reel.dataset.title || "Video preview") + " preview video");
-  /* First 6 visible: preload=metadata already set in HTML; cards 7+ → preload=none */
-  if (i >= 6) v.preload = "none";
+  v.preload = "metadata";
 });
 
-/* ── Lazy-upgrade preload for off-screen videos (cards 7+) ── */
-const preloadObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    const v = e.target.querySelector(".reel-video");
-    if (v && e.isIntersecting && v.preload === "none") {
-      v.preload = "metadata";
-      v.load();
-    }
-  });
-}, { threshold: 0.1, rootMargin: "200px" });
-reels.forEach((reel, i) => { if (i >= 6) preloadObs.observe(reel); });
+/* ── Carousel state ── */
+let carIdx = 0;
 
-/* ── Hover preview (desktop only, touch devices skip entirely) ── */
-const isTouch = window.matchMedia("(hover: none)").matches;
-let hoverTimer = null;
-let currentlyPlaying = null;
-
-if (!isTouch) {
-  reels.forEach(reel => {
-    const v = reel.querySelector(".reel-video");
-    if (!v) return;
-
-    reel.addEventListener("mouseenter", () => {
-      clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(() => {
-        if (currentlyPlaying && currentlyPlaying !== v) {
-          currentlyPlaying.pause();
-          currentlyPlaying.currentTime = 0;
-          currentlyPlaying.closest(".reel")?.classList.remove("is-playing");
-        }
-        v.currentTime = 0;
-        v.play().catch(() => {});
-        currentlyPlaying = v;
-        reel.classList.add("is-playing");
-      }, 50);
-    });
-
-    reel.addEventListener("mouseleave", () => {
-      clearTimeout(hoverTimer);
-      v.pause();
-      v.currentTime = 0;
-      reel.classList.remove("is-playing");
-      if (currentlyPlaying === v) currentlyPlaying = null;
-    });
-  });
+function getOffsets() {
+  const w = window.innerWidth;
+  return w < 480  ? { o1: 185, o2: 305, r1: 8  } :
+         w < 768  ? { o1: 240, o2: 395, r1: 10 } :
+                    { o1: 292, o2: 488, r1: 13  };
 }
 
-/* ── Pause off-screen videos (saves GPU/battery) ── */
-const offscreenObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    const v = e.target;
-    if (!e.isIntersecting && !v.paused) {
-      v.pause();
-      v.currentTime = 0;
-      v.closest(".reel")?.classList.remove("is-playing");
-      if (currentlyPlaying === v) currentlyPlaying = null;
-    }
-  });
-}, { threshold: 0.25 });
-document.querySelectorAll(".reel-video").forEach(v => offscreenObs.observe(v));
+function positionCards() {
+  const { o1, o2, r1 } = getOffsets();
+  reels.forEach((card, i) => {
+    const off = i - carIdx;
+    const abs = Math.abs(off);
+    const v   = card.querySelector(".reel-video");
+    const mb  = card.querySelector(".reel-mute");
+    let tx, sc, bl, br, op, zi;
 
-/* ── Click → open lightbox ── */
-reels.forEach(reel => {
-  reel.addEventListener("click", () => openLightbox(parseInt(reel.dataset.idx)));
+    if (off === 0) {
+      [tx, sc, bl, br, op, zi] = [0, 1, 0, 1, 1, 10];
+      card.classList.add("reel--active");
+      if (mb) mb.style.opacity = "1";
+      v.play().catch(() => {});
+    } else if (abs === 1) {
+      tx = off > 0 ? o1 : -o1;
+      [sc, bl, br, op, zi] = [0.76, 3, 0.52, 1, 7];
+      card.classList.remove("reel--active");
+      if (mb) mb.style.opacity = "0";
+      v.pause(); v.currentTime = 0;
+    } else if (abs === 2) {
+      tx = off > 0 ? o2 : -o2;
+      [sc, bl, br, op, zi] = [0.6, 5, 0.28, 0.85, 4];
+      card.classList.remove("reel--active");
+      if (mb) mb.style.opacity = "0";
+      v.pause(); v.currentTime = 0;
+    } else {
+      tx = off > 0 ? o2 + 160 : -(o2 + 160);
+      [sc, bl, br, op, zi] = [0.5, 8, 0.1, 0, 1];
+      card.classList.remove("reel--active");
+      if (mb) mb.style.opacity = "0";
+      v.pause(); v.currentTime = 0;
+    }
+    const ry = off === 0 ? 0 : off > 0 ? -r1 : r1;
+    card.style.transform     = `translateX(${tx}px) scale(${sc}) rotateY(${ry}deg)`;
+    card.style.filter        = `blur(${bl}px) brightness(${br})`;
+    card.style.opacity       = op;
+    card.style.zIndex        = zi;
+    card.style.pointerEvents = abs <= 2 ? "auto" : "none";
+  });
+  document.querySelectorAll(".carousel-dot").forEach((d, i) =>
+    d.classList.toggle("active", i === carIdx));
+}
+
+function carNav(dir) {
+  carIdx = (carIdx + dir + reels.length) % reels.length;
+  positionCards();
+}
+
+/* ── Pause all videos when section scrolls off-screen ── */
+const offscreenObs = new IntersectionObserver((entries) => {
+  if (!entries[0].isIntersecting) {
+    reels.forEach(r => { const v = r.querySelector(".reel-video"); v.pause(); v.currentTime = 0; });
+  }
+}, { threshold: 0.05 });
+offscreenObs.observe(document.querySelector(".reels-wrap"));
+
+/* ── Carousel: click center → lightbox · click side → navigate ── */
+reels.forEach((reel, i) => {
+  reel.addEventListener("click", () => {
+    if (i === carIdx) openLightbox(i);
+    else { carIdx = i; positionCards(); }
+  });
 });
+
+/* ── Mute buttons (injected per card) ── */
+const MUTE_PATH   = "M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z";
+const UNMUTE_PATH = "M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z";
+reels.forEach(reel => {
+  const frame = reel.querySelector(".reel-frame");
+  const v     = reel.querySelector(".reel-video");
+  const btn   = document.createElement("button");
+  btn.className = "reel-mute";
+  btn.setAttribute("aria-label", "Toggle mute");
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path class="mp" d="${UNMUTE_PATH}"/></svg>`;
+  frame.appendChild(btn);
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    v.muted = !v.muted;
+    btn.querySelector(".mp").setAttribute("d", v.muted ? MUTE_PATH : UNMUTE_PATH);
+  });
+});
+
+/* ── Dots ── */
+const dotsEl = document.getElementById("carouselDots");
+reels.forEach((_, i) => {
+  const d = document.createElement("button");
+  d.className = "carousel-dot";
+  d.setAttribute("aria-label", `Video ${i + 1}`);
+  d.addEventListener("click", () => { carIdx = i; positionCards(); });
+  dotsEl.appendChild(d);
+});
+
+/* ── Arrow buttons ── */
+document.getElementById("carPrev").addEventListener("click", () => carNav(-1));
+document.getElementById("carNext").addEventListener("click", () => carNav(1));
+
+/* ── Touch swipe ── */
+let tsX = 0;
+track.addEventListener("touchstart", e => { tsX = e.touches[0].clientX; }, { passive: true });
+track.addEventListener("touchend",   e => {
+  const dx = e.changedTouches[0].clientX - tsX;
+  if (Math.abs(dx) > 50) carNav(dx > 0 ? -1 : 1);
+}, { passive: true });
+
+/* ── Resize: recalculate offsets ── */
+window.addEventListener("resize", positionCards);
+
+/* ── Initial layout ── */
+positionCards();
 
 /* ── Page visibility: pause all when tab hidden ── */
 document.addEventListener("visibilitychange", () => {
@@ -964,22 +1018,21 @@ function lbNav(dir) {
   openLightbox(next);
 }
 
-function scrollReels(dir) {
-  track.scrollBy({ left: dir * 280, behavior: "smooth" });
-}
-
-/* ── Keyboard: Escape + Arrow nav (focus trap in lightbox) ── */
+/* ── Keyboard: lightbox Escape/Arrow · carousel Arrow ── */
 document.addEventListener("keydown", (e) => {
-  if (!lightbox.classList.contains("revealed")) return;
-  if (e.key === "Escape")     { e.preventDefault(); closeLightbox(); }
-  if (e.key === "ArrowLeft")  { e.preventDefault(); lbNav(-1); }
-  if (e.key === "ArrowRight") { e.preventDefault(); lbNav(1); }
-  /* Basic focus trap: keep Tab inside lightbox */
-  if (e.key === "Tab") {
-    const focusable = lightbox.querySelectorAll("button, video, [tabindex]");
-    const first = focusable[0], last = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  if (lightbox.classList.contains("revealed")) {
+    if (e.key === "Escape")     { e.preventDefault(); closeLightbox(); }
+    if (e.key === "ArrowLeft")  { e.preventDefault(); lbNav(-1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); lbNav(1); }
+    if (e.key === "Tab") {
+      const focusable = lightbox.querySelectorAll("button, video, [tabindex]");
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  } else {
+    if (e.key === "ArrowLeft")  { e.preventDefault(); carNav(-1); }
+    if (e.key === "ArrowRight") { e.preventDefault(); carNav(1); }
   }
 });
 
