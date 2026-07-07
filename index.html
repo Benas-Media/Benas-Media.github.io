@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Benas Media — Social Media Content & Video Editing</title>
 <meta name="description" content="Short-form video editing for brands, creators, and businesses. Reels, TikToks, YouTube Shorts.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,8 +25,9 @@
   --serif:'Fraunces',Georgia,serif;
   --sans:'Inter',system-ui,sans-serif;
 }
-html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--cream);color:var(--ink);overflow-x:hidden;font-feature-settings:"ss01","cv11"}
+html{scroll-behavior:smooth;touch-action:manipulation}
+body{font-family:var(--sans);background:var(--cream);color:var(--ink);overflow-x:hidden;font-feature-settings:"ss01","cv11";touch-action:manipulation}
+a,button{touch-action:manipulation}
 ::selection{background:var(--blue-mid);color:var(--cream)}
 
 /* ============ NAV ============ */
@@ -84,13 +85,21 @@ nav{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-
 
 /* ============ REELS ============ */
 .reels-wrap{padding:0 0 5rem;position:relative;overflow:hidden}
-.reels-track{position:relative;height:510px;display:flex;align-items:center;justify-content:center;perspective:1200px}
+.reels-track{position:relative;height:510px;display:flex;align-items:center;justify-content:center;perspective:1200px;touch-action:pan-y}
 
-.reel{position:absolute;width:240px;cursor:pointer;display:flex;flex-direction:column;gap:0;transition:transform .44s cubic-bezier(.4,0,.2,1),opacity .44s cubic-bezier(.4,0,.2,1),filter .44s cubic-bezier(.4,0,.2,1);will-change:transform,opacity;contain:layout style;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.reel{position:absolute;width:240px;cursor:pointer;display:flex;flex-direction:column;gap:0;transition:transform .44s cubic-bezier(.4,0,.2,1),opacity .44s cubic-bezier(.4,0,.2,1);will-change:transform,opacity;contain:layout style;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+/* Dim via opacity overlay instead of animating filter:brightness (repaint-per-frame on mobile) */
+.reel::after{content:"";position:absolute;inset:0;background:#14110e;border-radius:18px;opacity:var(--dim,0);transition:opacity .44s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:15}
 .reel--active:hover .reel-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
-.reel-frame{position:relative;width:240px;height:427px;border-radius:18px 18px 0 0;overflow:hidden;background:#1a1815;box-shadow:0 12px 36px rgba(31,28,24,.18),0 2px 8px rgba(31,28,24,.08),0 0 0 1px rgba(31,28,24,.06);transition:box-shadow .4s;transform:translateZ(0);will-change:transform;contain:layout style paint;isolation:isolate}
+@media(hover:none){.reel--active .reel-play{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.reel-frame{position:relative;width:240px;height:427px;border-radius:18px 18px 0 0;overflow:hidden;background:#1a1815;box-shadow:0 12px 36px rgba(31,28,24,.18),0 2px 8px rgba(31,28,24,.08),0 0 0 1px rgba(31,28,24,.06);transition:box-shadow .4s;transform:translateZ(0);contain:layout style paint;isolation:isolate}
 .reel:hover .reel-frame{box-shadow:0 24px 56px rgba(31,28,24,.28),0 6px 16px rgba(31,28,24,.12),0 0 0 1px rgba(31,28,24,.1)}
-.reel-video{width:100%;height:100%;object-fit:cover;display:block;transform:translateZ(0);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;image-rendering:-webkit-optimize-contrast;opacity:1;transition:opacity .4s cubic-bezier(.22,1,.36,1)}
+.reel-video{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:9/16;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+/* Subtle directional motion blur during nav — desktop / fine pointers only */
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .reel{transition:transform .44s cubic-bezier(.4,0,.2,1),opacity .44s cubic-bezier(.4,0,.2,1),filter .22s ease-out}
+  .reels-track.is-motion .reel{filter:blur(1.2px)}
+}
 .reel-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,12,10,.15) 0%,transparent 25%,transparent 70%,rgba(15,12,10,.75) 100%);pointer-events:none}
 .reel-badge{position:absolute;top:14px;left:14px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--cream);background:rgba(0,0,0,.4);backdrop-filter:blur(10px);padding:5px 10px;border-radius:99px;border:.5px solid rgba(255,255,255,.18);font-weight:500}
 .reel-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.85);width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;color:var(--ink);opacity:0;transition:all .35s cubic-bezier(.2,0,.2,1);box-shadow:0 10px 30px rgba(0,0,0,.3)}
@@ -141,6 +150,7 @@ nav{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-
 .process-num{font-family:var(--serif);font-size:12px;font-style:italic;color:var(--blue-deep);letter-spacing:.04em;margin-bottom:1rem}
 .process-title{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin-bottom:.7rem;line-height:1.15}
 .process-desc{font-size:13px;color:var(--mid);line-height:1.65}
+.section-cta{display:flex;justify-content:center;margin-top:3.5rem}
 
 /* ============ CONTACT ============ */
 .contact-section{padding:6rem 2.5rem;text-align:center;background:linear-gradient(180deg,var(--cream) 0%,var(--cream-2) 100%);margin-top:4rem;position:relative;overflow:hidden}
@@ -165,7 +175,6 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
 .foot-copy{font-size:11px;color:rgba(245,242,235,.5);letter-spacing:.08em}
 
 /* ============ LIGHTBOX ============ */
-.lb-inner-old-placeholder{display:none}
 .lb-video-wrap{position:relative;width:100%;aspect-ratio:9/16;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 90px rgba(0,0,0,.5);transform:translateZ(0);will-change:transform;contain:layout style paint;isolation:isolate}
 .lb-video{width:100%;height:100%;object-fit:cover;display:block;max-width:100%;max-height:90vh;background:#000;transform:translateZ(0);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;image-rendering:-webkit-optimize-contrast}
 .lb-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.4) 100%);pointer-events:none;z-index:1;border-radius:18px}
@@ -179,7 +188,7 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
 .lightbox.open{display:flex}
 .lb-inner{position:relative;max-width:420px;width:100%;display:flex;flex-direction:column;gap:1rem;transform:scale(.96);opacity:0;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .5s cubic-bezier(.22,1,.36,1)}
 .lightbox.revealed .lb-inner{transform:scale(1);opacity:1}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}html{scroll-behavior:auto}}
 .lb-meta{display:flex;align-items:center;justify-content:space-between;color:var(--cream);padding:0 4px}
 .lb-meta-left{display:flex;flex-direction:column;gap:4px}
 .lb-cat{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
@@ -196,7 +205,7 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
 
 /* ============ MOBILE ============ */
 @media (max-width:820px){
-  nav{padding:.9rem 1.5rem}
+  nav{padding:.9rem 1.5rem;backdrop-filter:blur(12px) saturate(160%);-webkit-backdrop-filter:blur(12px) saturate(160%)}
   .nav-links{display:none}
   .hero{padding:7rem 1.5rem 4rem}
   .hero-meta{padding:0 1.5rem;font-size:9px}
@@ -239,12 +248,12 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
   <h1>Posts that<br>make people <em>stop scrolling</em></h1>
   <p class="hero-sub">Short-form video editing for brands, creators, and businesses ready to take social seriously. Reels, TikToks, Shorts.</p>
   <div class="hero-cta-row">
-    <button class="btn-primary" onclick="document.querySelector('#work').scrollIntoView({behavior:'smooth'})">
-      View selected work
+    <button class="btn-primary" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">
+      Start a project
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
     </button>
-    <button class="btn-ghost" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">
-      Start a project
+    <button class="btn-ghost" onclick="document.querySelector('#work').scrollIntoView({behavior:'smooth'})">
+      View selected work
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
     </button>
   </div>
@@ -296,7 +305,7 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
       <h2 class="section-title">Edits that earned their <em>algorithm</em></h2>
     </div>
     <div class="section-count">
-      <b>10</b>
+      <b>15</b>
       <span>recent projects</span>
     </div>
   </div>
@@ -717,6 +726,12 @@ footer{padding:2.5rem;display:flex;align-items:center;justify-content:space-betw
       <p class="process-desc">Two rounds of revisions included. Final files in every format your platform needs.</p>
     </div>
   </div>
+  <div class="section-cta">
+    <button class="btn-primary" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">
+      Start a project
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+    </button>
+  </div>
 </section>
 
 <!-- CONTACT -->
@@ -796,23 +811,15 @@ const lbCounter = document.getElementById("lbCounter");
 const lbSpinner = document.getElementById("lbSpinner");
 let currentIdx  = 0;
 
-/* ── Strip non-encoded multi-res sources — only the original .mp4 exists right now.
-   Remove the 1440p/1080p/720p/webm sources so the browser loads instantly
-   without firing 4 failed network requests first. Re-add them once encoded. ── */
-document.querySelectorAll(".reel-video").forEach(v => {
-  const srcs = [...v.querySelectorAll("source")];
-  if (srcs.length > 1) {
-    srcs.slice(0, -1).forEach(s => s.remove());
-    v.load();
-  }
-});
-
 /* ── Slow-connection detection ── */
-if (navigator.connection && /(2g|slow-2g|3g)/.test(navigator.connection.effectiveType)) {
-  document.documentElement.classList.add("slow-connection");
-}
+const SLOW_CONN = !!(navigator.connection && /(2g|slow-2g|3g)/.test(navigator.connection.effectiveType));
+if (SLOW_CONN) document.documentElement.classList.add("slow-connection");
 
-/* ── Set production attributes; only preload cards near start (idx 2 ± 2) ── */
+/* ── Set production attributes + preload budget, THEN strip the non-encoded
+   multi-res sources and load(). Preload must be set before load() or every
+   video (incl. 60MB+ files) starts fetching metadata immediately.
+   Only cards near start (idx 2 ± 2) preload; on slow connections only the
+   start card does. Re-add the 1440p/1080p/720p/webm sources once encoded. ── */
 const CAROUSEL_START = 2;
 reels.forEach((reel, i) => {
   const v = reel.querySelector(".reel-video");
@@ -821,7 +828,12 @@ reels.forEach((reel, i) => {
   v.setAttribute("disableremoteplayback", "");
   v.setAttribute("x-webkit-airplay", "deny");
   v.setAttribute("aria-label", (reel.dataset.title || "Video preview") + " preview video");
-  v.preload = Math.abs(i - CAROUSEL_START) <= 2 ? "metadata" : "none";
+  v.preload = (SLOW_CONN ? i === CAROUSEL_START : Math.abs(i - CAROUSEL_START) <= 2) ? "metadata" : "none";
+  const srcs = [...v.querySelectorAll("source")];
+  if (srcs.length > 1) {
+    srcs.slice(0, -1).forEach(s => s.remove());
+    v.load();
+  }
 });
 
 /* ── Carousel state ── */
@@ -837,11 +849,20 @@ function getOffsets() {
 }
 
 function upgradePreload(idx) {
-  const lo = Math.max(0, idx - 2), hi = Math.min(reels.length - 1, idx + 2);
+  const reach = SLOW_CONN ? 0 : 2;
+  const lo = Math.max(0, idx - reach), hi = Math.min(reels.length - 1, idx + reach);
   for (let i = lo; i <= hi; i++) {
     const v = reels[i].querySelector(".reel-video");
     if (v && v.preload === "none") { v.preload = "metadata"; v.load(); }
   }
+}
+
+/* ── Directional motion-blur flash during nav (CSS gates it to desktop) ── */
+let motionTimer = null;
+function flashMotion() {
+  track.classList.add("is-motion");
+  clearTimeout(motionTimer);
+  motionTimer = setTimeout(() => track.classList.remove("is-motion"), 460);
 }
 
 function positionCards() {
@@ -884,14 +905,13 @@ function positionCards() {
 
     const ry = off === 0 ? 0 : off > 0 ? -r1 : r1;
     card.style.transform     = `translate3d(${tx}px,0,0) scale(${sc}) rotateY(${ry}deg)`;
-    card.style.filter        = `brightness(${br})`;
+    card.style.setProperty("--dim", (1 - br).toFixed(2));
     card.style.opacity       = op;
     card.style.zIndex        = zi;
     card.style.pointerEvents = abs <= 2 ? "auto" : "none";
   });
 
-  document.querySelectorAll(".carousel-dot").forEach((d, i) =>
-    d.classList.toggle("active", i === carIdx));
+  dotEls.forEach((d, i) => d.classList.toggle("active", i === carIdx));
 
   prevCarIdx = carIdx;
 }
@@ -901,14 +921,20 @@ function carNav(dir) {
   navLocked = true;
   setTimeout(() => { navLocked = false; }, 400);
   carIdx = (carIdx + dir + reels.length) % reels.length;
+  flashMotion();
   upgradePreload(carIdx);
   positionCards();
 }
 
-/* ── Pause all videos when section scrolls off-screen ── */
+/* ── Play/pause with the viewport: pause everything when the section scrolls
+   off-screen, resume the active preview when it comes back ── */
+let reelsInView = true;
 const offscreenObs = new IntersectionObserver((entries) => {
-  if (!entries[0].isIntersecting) {
+  reelsInView = entries[0].isIntersecting;
+  if (!reelsInView) {
     reels.forEach(r => { const v = r.querySelector(".reel-video"); v.pause(); v.currentTime = 0; });
+  } else {
+    reels[carIdx]?.querySelector(".reel-video")?.play().catch(() => {});
   }
 }, { threshold: 0.05 });
 offscreenObs.observe(document.querySelector(".reels-wrap"));
@@ -917,7 +943,7 @@ offscreenObs.observe(document.querySelector(".reels-wrap"));
 reels.forEach((reel, i) => {
   reel.addEventListener("click", () => {
     if (i === carIdx) openLightbox(i);
-    else { carIdx = i; upgradePreload(i); positionCards(); }
+    else { carIdx = i; flashMotion(); upgradePreload(i); positionCards(); }
   });
 });
 
@@ -939,14 +965,16 @@ reels.forEach(reel => {
   });
 });
 
-/* ── Dots ── */
+/* ── Dots (cached — positionCards re-reads them every nav) ── */
 const dotsEl = document.getElementById("carouselDots");
+const dotEls = [];
 reels.forEach((_, i) => {
   const d = document.createElement("button");
   d.className = "carousel-dot";
   d.setAttribute("aria-label", `Video ${i + 1}`);
-  d.addEventListener("click", () => { carIdx = i; upgradePreload(i); positionCards(); });
+  d.addEventListener("click", () => { carIdx = i; flashMotion(); upgradePreload(i); positionCards(); });
   dotsEl.appendChild(d);
+  dotEls.push(d);
 });
 
 /* ── Arrow buttons ── */
@@ -961,36 +989,41 @@ track.addEventListener("touchend",   e => {
   if (Math.abs(dx) > 50) carNav(dx > 0 ? -1 : 1);
 }, { passive: true });
 
-/* ── Resize: recalculate offsets ── */
-window.addEventListener("resize", positionCards);
+/* ── Resize: recalc offsets, debounced to one layout pass per frame ── */
+let resizeRaf = 0;
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(positionCards);
+});
 
 /* ── Initial layout ── */
 positionCards();
 
-/* ── Page visibility: pause all when tab hidden ── */
+/* ── Page visibility: pause all when tab hidden, resume active on return ── */
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     document.querySelectorAll(".reel-video").forEach(v => { v.pause(); v.currentTime = 0; });
-    currentlyPlaying = null;
+  } else if (reelsInView && !lightbox.classList.contains("revealed")) {
+    reels[carIdx]?.querySelector(".reel-video")?.play().catch(() => {});
   }
 });
 
 /* ── Lightbox ── */
-const marqueeTrack  = document.querySelector(".marquee-track");
-const logosTrack    = document.querySelector(".logos-track");
+const marqueeEl = document.querySelector(".marquee");
 
 function pauseBackgroundAnim() {
-  if (marqueeTrack) marqueeTrack.style.animationPlayState = "paused";
-  if (logosTrack)   logosTrack.style.animationPlayState   = "paused";
+  if (marqueeEl) marqueeEl.style.animationPlayState = "paused";
 }
 function resumeBackgroundAnim() {
-  if (marqueeTrack) marqueeTrack.style.animationPlayState = "running";
-  if (logosTrack)   logosTrack.style.animationPlayState   = "running";
+  if (marqueeEl) marqueeEl.style.animationPlayState = "running";
 }
 
 function openLightbox(idx) {
   currentIdx = idx;
   const reel = reels[idx];
+
+  /* Stop the background preview while the lightbox plays */
+  reels[carIdx]?.querySelector(".reel-video")?.pause();
 
   /* Load original source directly (swap to HD path once encoded) */
   const base = reel.dataset.src || "";
@@ -1033,6 +1066,7 @@ function closeLightbox() {
     lbVideo.src = "";
     document.body.style.overflow = "";
     resumeBackgroundAnim();
+    if (reelsInView) reels[carIdx]?.querySelector(".reel-video")?.play().catch(() => {});
   }, 500);
 }
 
