@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>BEJU Creative — We don't edit. We convert.</title>
 <meta name="description" content="Short-form video editing for personal brands, coaches, course creators, and DTC brands. Reels, TikToks, YouTube Shorts that convert.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,18 +15,19 @@
    RESET & BASE
 ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { overflow-x: hidden; touch-action: manipulation; }
+html { overflow-x: hidden; overscroll-behavior-x: none; touch-action: manipulation; }
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 }
 body {
   font-family: 'Inter', system-ui, sans-serif;
+  /* No fixed attachment — fixed background gradients force full repaints on scroll (mobile jank) */
   background: linear-gradient(180deg, #0c0c0c 0%, #0a0a0a 50%, #0b0b0b 100%);
   color: var(--text);
   overflow-x: hidden;
-  touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
 }
 /* Kill double-tap zoom delay on everything tappable */
 a, button, input, textarea, .reel-card { touch-action: manipulation; }
@@ -214,6 +215,7 @@ em { font-style: italic; color: var(--accent); }
 .d3 { transition-delay: 0.3s; }
 .d4 { transition-delay: 0.4s; }
 .d5 { transition-delay: 0.5s; }
+.d6 { transition-delay: 0.6s; }
 
 /* ============================================================
    BUTTONS
@@ -236,6 +238,7 @@ em { font-style: italic; color: var(--accent); }
   cursor: pointer;
   transition: background 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
   white-space: nowrap;
+  will-change: transform;
   backface-visibility: hidden;
 }
 .btn-primary:hover {
@@ -408,12 +411,12 @@ nav.scrolled {
    HERO
 ============================================================ */
 .hero {
-  min-height: 100vh;
+  min-height: 90vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: calc(80px + 4vh) 2rem 4rem;
+  padding: calc(80px + 4vh) 2rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -436,7 +439,7 @@ nav.scrolled {
 
 .hero-h1 {
   font-family: 'Syne', sans-serif;
-  font-size: clamp(56px, 9vw, 118px);
+  font-size: clamp(34px, 10vw, 140px);
   font-weight: 800;
   line-height: 0.93;
   letter-spacing: -0.035em;
@@ -711,7 +714,7 @@ nav.scrolled {
    WORK / REEL SHOWCASE
 ============================================================ */
 .work-section {
-  padding: 7rem 0;
+  padding: 3.5rem 0 5rem;
   overflow: hidden;
 }
 .work-head {
@@ -739,25 +742,20 @@ nav.scrolled {
 .wnav:hover { border-color: var(--accent); color: var(--accent); background: rgba(200,241,53,0.06); }
 
 .work-scroll {
-  padding: 0.5rem 2.5rem 2.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  cursor: grab;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
   user-select: none;
-  touch-action: pan-x;               /* native horizontal swipe, page keeps pan-y */
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
 }
-.work-scroll:active { cursor: grabbing; }
-.work-scroll::-webkit-scrollbar { display: none; }
-.work-track { display: flex; gap: 18px; width: max-content; }
+.work-track { position: relative; height: 660px; display: flex; align-items: center; justify-content: center; perspective: 1400px; touch-action: pan-y; }
 
-.reel-wrap { display: flex; flex-direction: column; gap: 12px; }
+.reel-wrap { position: absolute; width: 300px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: transform .55s cubic-bezier(.22,1,.36,1), opacity .44s cubic-bezier(.22,1,.36,1); will-change: transform, opacity; }
+/* Dim side cards via an opacity overlay instead of animating filter:brightness —
+   animated filters repaint every frame and jank on mobile GPUs */
+.reel-wrap::after { content: ""; position: absolute; inset: 0; background: #0a0a0a; border-radius: 22px; opacity: var(--dim, 0); transition: opacity .44s cubic-bezier(.22,1,.36,1); pointer-events: none; z-index: 15; }
 .reel-card {
-  width: 240px;
-  height: 427px;
-  aspect-ratio: 9 / 16;
+  width: 300px;
+  height: 534px;
   background: linear-gradient(160deg, #181818 0%, #111 100%);
   border-radius: 22px;
   border: 1px solid var(--border);
@@ -769,14 +767,10 @@ nav.scrolled {
   align-items: center;
   justify-content: center;
   transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s var(--ease);
+  will-change: transform;
   backface-visibility: hidden;
-  scroll-snap-align: start;
-  scroll-margin-left: 2.5rem;
-  contain: layout style paint;
-  isolation: isolate;
 }
 .reel-card:hover {
-  transform: translateY(-4px) translateZ(0);
   box-shadow: 0 16px 48px rgba(200,241,53,0.16);
   border-color: var(--border-accent);
 }
@@ -822,27 +816,34 @@ nav.scrolled {
   text-align: center;
   padding: 0 4px;
 }
-.drag-hint {
-  text-align: center;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  padding-bottom: 0.5rem;
-}
+.reel-mute { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; z-index: 20; pointer-events: auto; }
+.reel-mute svg { width: 16px; height: 16px; }
+.carousel-arrow { position: absolute; top: calc(50% - 30px); transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; background: rgba(15,15,15,.85); border: 1px solid var(--border-accent); color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 30; transition: background .25s, border-color .25s; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+.carousel-arrow:hover { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
+.carousel-arrow svg { width: 18px; height: 18px; }
+.carousel-arrow-prev { left: 1.5rem; }
+.carousel-arrow-next { right: 1.5rem; }
+.carousel-dots { display: flex; gap: 6px; justify-content: center; padding-top: 1.5rem; }
+.carousel-dot { width: 6px; height: 6px; border-radius: 3px; background: var(--border); transition: all .35s cubic-bezier(.22,1,.36,1); cursor: pointer; border: none; padding: 0; }
+.carousel-dot.active { width: 20px; background: var(--accent); }
 
 /* ── VIDEO PERFORMANCE & PLAYBACK QUALITY ── */
 .reel-video {
   display: block;
   width: 100%; height: 100%;
-  aspect-ratio: 9 / 16;
   object-fit: cover;
   position: absolute; inset: 0;
   transform: translateZ(0);
+  will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
   opacity: 1;
   transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reel-card {
+  contain: layout style paint;
+  isolation: isolate;
 }
 .reel-card .placeholder-icon {
   transition: opacity 0.4s;
@@ -890,6 +891,7 @@ nav.scrolled {
   box-shadow: 0 0 60px rgba(200,241,53,0.08), inset 0 0 40px rgba(200,241,53,0.02);
   transition: box-shadow 0.5s var(--ease), border-color 0.4s var(--ease);
   z-index: 1;
+  will-change: transform;
 }
 .g-card:hover {
   box-shadow: 0 0 90px rgba(200,241,53,0.16), inset 0 0 50px rgba(200,241,53,0.03);
@@ -1000,6 +1002,7 @@ nav.scrolled {
   border: 1px solid var(--border);
   border-left: 3px solid transparent;
   transition: background 0.3s var(--ease), border-left-color 0.3s var(--ease), transform 0.3s var(--ease);
+  will-change: transform;
 }
 .svc-card:hover {
   background: var(--card-hover);
@@ -1104,6 +1107,7 @@ nav.scrolled {
   padding: 30px;
   border: 1px solid var(--border);
   transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+  will-change: transform;
 }
 .tcard:hover { border-color: var(--border-accent); transform: translateY(-4px) translateZ(0); }
 .tquote {
@@ -1203,6 +1207,7 @@ nav.scrolled {
   border: 1px solid var(--border);
   text-align: center;
   transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+  will-change: transform;
 }
 .team-card:hover { border-color: var(--border-accent); transform: translateY(-4px) translateZ(0); }
 
@@ -1336,6 +1341,34 @@ nav.scrolled {
 .sticky-cta .btn-primary { padding: 12px 20px; font-size: 11px; flex-shrink: 0; }
 
 /* ============================================================
+   POST-VIEW PROMPT
+============================================================ */
+.view-prompt {
+  position: fixed;
+  left: 50%; bottom: 1.6rem;
+  transform: translate(-50%, 16px);
+  z-index: 951;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(14, 14, 14, 0.97);
+  color: var(--text);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
+  padding: 12px 14px 12px 20px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease-reveal), transform 0.4s var(--ease-reveal);
+  max-width: calc(100vw - 2rem);
+}
+.view-prompt.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.view-prompt-text { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; font-style: italic; white-space: nowrap; }
+.view-prompt .btn-primary { padding: 11px 18px; font-size: 10px; flex-shrink: 0; }
+.view-prompt-close { width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.view-prompt-close:hover { color: var(--text); }
+
+/* ============================================================
    FOOTER
 ============================================================ */
 footer {
@@ -1407,8 +1440,8 @@ footer {
 @media (max-width: 768px) {
   .nav-links, .nav-cta { display: none; }
   .hamburger { display: flex; }
-  .mobile-overlay { display: flex; }
   .sticky-cta { display: flex; }
+  .mobile-overlay { display: flex; }
   .process-steps { grid-template-columns: 1fr; gap: 2.5rem; }
   .process-line-track { display: none; }
   .testimonials-grid { grid-template-columns: 1fr; }
@@ -1428,7 +1461,10 @@ footer {
   .g-badges { grid-template-columns: 1fr; }
   .services-section, .testimonials-section,
   .about-section, .process-section { padding: 5rem 1.2rem; }
-  .work-scroll { padding: 0.5rem 1.2rem 2rem; }
+  .work-track { height: 580px; }
+  .carousel-arrow { width: 40px; height: 40px; }
+  .carousel-arrow-prev { left: .5rem; }
+  .carousel-arrow-next { right: .5rem; }
   .final-cta { padding: 5.5rem 1.2rem; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .team-grid-8, .team-grid-5 { grid-template-columns: 1fr; }
@@ -1450,7 +1486,7 @@ footer {
   <a href="#services" onclick="closeMob()">Services</a>
   <a href="#process"  onclick="closeMob()">Process</a>
   <a href="#contact"  onclick="closeMob()">Contact</a>
-  <a href="mailto:contact@bejucreative.com" onclick="closeMob()" class="mob-sub">Contact Us →</a>
+  <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" onclick="closeMob()" class="mob-sub">Contact Us →</a>
 </div>
 
 <!-- ============================================================
@@ -1466,7 +1502,7 @@ footer {
     <li><a href="#process">Process</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
-  <a href="mailto:contact@bejucreative.com" class="nav-cta">Contact Us</a>
+  <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="nav-cta">Contact Us</a>
   <button class="hamburger" id="hamburger" aria-label="Open menu">
     <span></span><span></span><span></span>
   </button>
@@ -1487,7 +1523,7 @@ footer {
   </p>
 
   <div class="hero-cta-row">
-    <a href="mailto:contact@bejucreative.com" class="btn-primary lg">Get In Touch →</a>
+    <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="btn-primary lg">Get In Touch →</a>
     <a href="#work" class="btn-ghost">See Our Work ↓</a>
   </div>
 
@@ -1495,7 +1531,7 @@ footer {
     <span class="reply-note"><span class="reply-dot"></span>Replies within 24 hours</span>
   </div>
 
-  <a href="#guarantee" class="hero-guarantee">Double your views, or you don't pay ↓</a>
+  <a href="#guarantee" class="hero-guarantee">Double your views, or you don't pay →</a>
 
   <div class="hero-pills">
     <span class="pill"><span class="pill-star">✦</span> 2M+ Views Delivered</span>
@@ -1506,70 +1542,6 @@ footer {
   <div class="scroll-cue">
     <span class="scroll-cue-text">Scroll</span>
     <div class="scroll-cue-arrow"></div>
-  </div>
-</section>
-
-<!-- ============================================================
-     MARQUEE TICKER
-============================================================ -->
-<div class="marquee-band">
-  <div class="marquee-track">
-    <div class="marquee-seg">
-      <span>Reels</span><span class="mdot">✦</span><span class="lm">TikTok</span><span class="mdot">✦</span>
-      <span>YouTube Shorts</span><span class="mdot">✦</span><span class="lm">Brand Content</span><span class="mdot">✦</span>
-      <span>Hooks</span><span class="mdot">✦</span><span class="lm">Retention Editing</span><span class="mdot">✦</span>
-      <span>Growth Focused</span><span class="mdot">✦</span><span class="lm">Fast Turnaround</span><span class="mdot">✦</span>
-    </div>
-    <div class="marquee-seg" aria-hidden="true">
-      <span>Reels</span><span class="mdot">✦</span><span class="lm">TikTok</span><span class="mdot">✦</span>
-      <span>YouTube Shorts</span><span class="mdot">✦</span><span class="lm">Brand Content</span><span class="mdot">✦</span>
-      <span>Hooks</span><span class="mdot">✦</span><span class="lm">Retention Editing</span><span class="mdot">✦</span>
-      <span>Growth Focused</span><span class="mdot">✦</span><span class="lm">Fast Turnaround</span><span class="mdot">✦</span>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     CLIENT LOGO STRIP
-============================================================ -->
-<section class="logos-section">
-  <p class="logos-label">Trusted By</p>
-  <div class="logos-outer">
-    <div class="logos-track">
-      <div class="logo-chip">Brand 01</div><div class="logo-chip">Brand 02</div>
-      <div class="logo-chip">Brand 03</div><div class="logo-chip">Brand 04</div>
-      <div class="logo-chip">Brand 05</div><div class="logo-chip">Brand 06</div>
-      <div class="logo-chip">Brand 07</div><div class="logo-chip">Brand 08</div>
-      <!-- duplicate for seamless loop -->
-      <div class="logo-chip">Brand 01</div><div class="logo-chip">Brand 02</div>
-      <div class="logo-chip">Brand 03</div><div class="logo-chip">Brand 04</div>
-      <div class="logo-chip">Brand 05</div><div class="logo-chip">Brand 06</div>
-      <div class="logo-chip">Brand 07</div><div class="logo-chip">Brand 08</div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     STATS BAR
-============================================================ -->
-<section class="stats-section" id="stats">
-  <div class="stats-grid">
-    <div class="stat-item reveal">
-      <span class="stat-num" data-target="120" data-suffix="+">0</span>
-      <span class="stat-lbl">Videos Delivered</span>
-    </div>
-    <div class="stat-item reveal d1">
-      <span class="stat-num" data-target="2" data-suffix="M+">0</span>
-      <span class="stat-lbl">Views Generated</span>
-    </div>
-    <div class="stat-item reveal d2">
-      <span class="stat-num" data-target="48" data-suffix="hr">0</span>
-      <span class="stat-lbl">Avg. Turnaround</span>
-    </div>
-    <div class="stat-item reveal d3">
-      <span class="stat-num" data-target="97" data-suffix="%">0</span>
-      <span class="stat-lbl">Client Retention</span>
-    </div>
   </div>
 </section>
 
@@ -1627,6 +1599,9 @@ footer {
   </div>
 
   <div class="work-scroll" id="workScroll">
+    <button class="carousel-arrow carousel-arrow-prev" id="carPrev" aria-label="Previous video">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
     <div class="work-track">
 
       <!-- Personal Brand 1 -->
@@ -1638,14 +1613,9 @@ footer {
             playsinline muted loop
             preload="metadata"
             disablepictureinpicture disableremoteplayback x-webkit-airplay="deny"
-            poster="videos/posters/personal-brand-1-beju-poster.webp"
             aria-label="Personal Brand Story preview video"
           >
-            <source src="videos/personal-brand-1-beju-1440p.mp4" type='video/mp4; codecs="avc1.640032"' media="(min-width: 1440px)">
-            <source src="videos/personal-brand-1-beju-1080p.mp4" type='video/mp4; codecs="avc1.640028"' media="(min-width: 768px)">
-            <source src="videos/personal-brand-1-beju-720p.mp4"  type='video/mp4; codecs="avc1.640028"'>
-            <source src="videos/personal-brand-1-beju.webm"       type='video/webm; codecs="vp9"'>
-            <source src="Personal%20brand1%20benas%20media.mp4"   type="video/mp4">
+            <source src="Personal brand1 beju.mp4"                type="video/mp4">
           </video>
           <span class="reel-badge">Personal Brand</span>
         </div>
@@ -1661,130 +1631,82 @@ footer {
             playsinline muted loop
             preload="metadata"
             disablepictureinpicture disableremoteplayback x-webkit-airplay="deny"
-            poster="videos/posters/personal-brand-2-beju-poster.webp"
             aria-label="Personal Brand Reel preview video"
           >
-            <source src="videos/personal-brand-2-beju-1440p.mp4" type='video/mp4; codecs="avc1.640032"' media="(min-width: 1440px)">
-            <source src="videos/personal-brand-2-beju-1080p.mp4" type='video/mp4; codecs="avc1.640028"' media="(min-width: 768px)">
-            <source src="videos/personal-brand-2-beju-720p.mp4"  type='video/mp4; codecs="avc1.640028"'>
-            <source src="videos/personal-brand-2-beju.webm"       type='video/webm; codecs="vp9"'>
-            <source src="Personal%20brand2%20benas%20media.mp4"   type="video/mp4">
+            <source src="Personal brand2 beju.mp4"                type="video/mp4">
           </video>
           <span class="reel-badge">Personal Brand</span>
         </div>
         <div class="reel-title">Personal Brand Reel</div>
       </div>
 
-      <!-- Card 03 — replace [project-03] with your actual filename -->
+      <!-- Personal Brand Edit -->
       <div class="reel-wrap" data-idx="2">
         <div class="reel-card">
-          <!-- [project-03] → videos/[project-03]-1440p.mp4 · -1080p.mp4 · -720p.mp4 · .webm · posters/[project-03]-poster.webp -->
           <video
             class="reel-video"
             playsinline muted loop
             preload="none"
             disablepictureinpicture disableremoteplayback x-webkit-airplay="deny"
-            poster="videos/posters/project-03-poster.webp"
-            aria-label="Project 03 preview video"
+            aria-label="Personal Brand Edit preview video"
           >
-            <source src="videos/project-03-1440p.mp4" type='video/mp4; codecs="avc1.640032"' media="(min-width: 1440px)">
-            <source src="videos/project-03-1080p.mp4" type='video/mp4; codecs="avc1.640028"' media="(min-width: 768px)">
-            <source src="videos/project-03-720p.mp4"  type='video/mp4; codecs="avc1.640028"'>
-            <source src="videos/project-03.webm"       type='video/webm; codecs="vp9"'>
-            <source src="videos/project-03.mp4"        type="video/mp4">
+            <source src="PERSONAL BRAND EDIT Beju CREATIVE.mp4" type="video/mp4">
           </video>
-          <div class="reel-glow"></div>
-          <div class="reel-icon placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
-            <span>Coming Soon</span>
-          </div>
-          <span class="reel-badge">Product Launch</span>
+          <span class="reel-badge">Personal Brand</span>
         </div>
-        <div class="reel-title">Project 03</div>
+        <div class="reel-title">Personal Brand Edit</div>
       </div>
 
-      <!-- Card 04 — replace [project-04] with your actual filename -->
+      <!-- Personal Brand Edit 2 -->
       <div class="reel-wrap" data-idx="3">
         <div class="reel-card">
-          <!-- [project-04] → videos/[project-04]-1440p.mp4 · -1080p.mp4 · -720p.mp4 · .webm · posters/[project-04]-poster.webp -->
           <video
             class="reel-video"
             playsinline muted loop
             preload="none"
             disablepictureinpicture disableremoteplayback x-webkit-airplay="deny"
-            poster="videos/posters/project-04-poster.webp"
-            aria-label="Project 04 preview video"
+            aria-label="Personal Brand Edit 2 preview video"
           >
-            <source src="videos/project-04-1440p.mp4" type='video/mp4; codecs="avc1.640032"' media="(min-width: 1440px)">
-            <source src="videos/project-04-1080p.mp4" type='video/mp4; codecs="avc1.640028"' media="(min-width: 768px)">
-            <source src="videos/project-04-720p.mp4"  type='video/mp4; codecs="avc1.640028"'>
-            <source src="videos/project-04.webm"       type='video/webm; codecs="vp9"'>
-            <source src="videos/project-04.mp4"        type="video/mp4">
+            <source src="PERSONAL BRAND EDIT 2 Beju CREATIVE.mp4" type="video/mp4">
           </video>
-          <div class="reel-glow"></div>
-          <div class="reel-icon placeholder-icon">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-            <span>Coming Soon</span>
-          </div>
-          <span class="reel-badge">Story Edit</span>
+          <span class="reel-badge">Personal Brand</span>
         </div>
-        <div class="reel-title">Project 04</div>
+        <div class="reel-title">Personal Brand Edit 2</div>
       </div>
 
-      <!-- Card 05 — replace [project-05] with your actual filename -->
+      <!-- Podcast Edit 1 -->
       <div class="reel-wrap" data-idx="4">
         <div class="reel-card">
-          <!-- [project-05] → videos/[project-05]-1440p.mp4 · -1080p.mp4 · -720p.mp4 · .webm · posters/[project-05]-poster.webp -->
           <video
             class="reel-video"
             playsinline muted loop
             preload="none"
             disablepictureinpicture disableremoteplayback x-webkit-airplay="deny"
-            poster="videos/posters/project-05-poster.webp"
-            aria-label="Project 05 preview video"
+            aria-label="Podcast Edit 1 preview video"
           >
-            <source src="videos/project-05-1440p.mp4" type='video/mp4; codecs="avc1.640032"' media="(min-width: 1440px)">
-            <source src="videos/project-05-1080p.mp4" type='video/mp4; codecs="avc1.640028"' media="(min-width: 768px)">
-            <source src="videos/project-05-720p.mp4"  type='video/mp4; codecs="avc1.640028"'>
-            <source src="videos/project-05.webm"       type='video/webm; codecs="vp9"'>
-            <source src="videos/project-05.mp4"        type="video/mp4">
+            <source src="PODCAST  EDIT 1 BEJU CREATIVE.mp4" type="video/mp4">
           </video>
-          <div class="reel-glow"></div>
-          <div class="reel-icon placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>Coming Soon</span>
-          </div>
-          <span class="reel-badge">UGC Style</span>
+          <span class="reel-badge">Podcast</span>
         </div>
-        <div class="reel-title">Project 05</div>
+        <div class="reel-title">Podcast Edit 1</div>
       </div>
 
       <!-- Card 06 — replace [project-06] with your actual filename -->
       <div class="reel-wrap" data-idx="5">
         <div class="reel-card">
-          <!-- [project-06] → videos/[project-06]-1440p.mp4 · -1080p.mp4 · -720p.mp4 · .webm · posters/[project-06]-poster.webp -->
           <video
             class="reel-video"
             playsinline muted loop
             preload="none"
             disablepictureinpicture disableremoteplayback x-webkit-airplay="deny"
-            poster="videos/posters/project-06-poster.webp"
-            aria-label="Project 06 preview video"
+            aria-label="Podcast LT preview video"
           >
-            <source src="videos/project-06-1440p.mp4" type='video/mp4; codecs="avc1.640032"' media="(min-width: 1440px)">
-            <source src="videos/project-06-1080p.mp4" type='video/mp4; codecs="avc1.640028"' media="(min-width: 768px)">
-            <source src="videos/project-06-720p.mp4"  type='video/mp4; codecs="avc1.640028"'>
-            <source src="videos/project-06.webm"       type='video/webm; codecs="vp9"'>
-            <source src="videos/project-06.mp4"        type="video/mp4">
+            <source src="Podcast LT.mp4" type="video/mp4">
           </video>
           <div class="reel-glow"></div>
-          <div class="reel-icon placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-            <span>Coming Soon</span>
-          </div>
-          <span class="reel-badge">Talking Head</span>
+          <span class="reel-badge">Podcast</span>
         </div>
-        <div class="reel-title">Project 06</div>
+        <div class="reel-title">Podcast LT</div>
       </div>
 
       <!-- Card 07 — replace [project-07] with your actual filename -->
@@ -1844,8 +1766,55 @@ footer {
       </div>
 
     </div>
+    <button class="carousel-arrow carousel-arrow-next" id="carNext" aria-label="Next video">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
   </div>
-  <p class="drag-hint">← Drag to explore →</p>
+  <div class="carousel-dots" id="carouselDots"></div>
+</section>
+
+<!-- ============================================================
+     MARQUEE TICKER
+============================================================ -->
+<div class="marquee-band">
+  <div class="marquee-track">
+    <div class="marquee-seg">
+      <span>Reels</span><span class="mdot">✦</span><span class="lm">TikTok</span><span class="mdot">✦</span>
+      <span>YouTube Shorts</span><span class="mdot">✦</span><span class="lm">Brand Content</span><span class="mdot">✦</span>
+      <span>Hooks</span><span class="mdot">✦</span><span class="lm">Retention Editing</span><span class="mdot">✦</span>
+      <span>Growth Focused</span><span class="mdot">✦</span><span class="lm">Fast Turnaround</span><span class="mdot">✦</span>
+    </div>
+    <div class="marquee-seg" aria-hidden="true">
+      <span>Reels</span><span class="mdot">✦</span><span class="lm">TikTok</span><span class="mdot">✦</span>
+      <span>YouTube Shorts</span><span class="mdot">✦</span><span class="lm">Brand Content</span><span class="mdot">✦</span>
+      <span>Hooks</span><span class="mdot">✦</span><span class="lm">Retention Editing</span><span class="mdot">✦</span>
+      <span>Growth Focused</span><span class="mdot">✦</span><span class="lm">Fast Turnaround</span><span class="mdot">✦</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     STATS BAR
+============================================================ -->
+<section class="stats-section" id="stats">
+  <div class="stats-grid">
+    <div class="stat-item reveal">
+      <span class="stat-num" data-target="120" data-suffix="+">0</span>
+      <span class="stat-lbl">Videos Delivered</span>
+    </div>
+    <div class="stat-item reveal d1">
+      <span class="stat-num" data-target="2" data-suffix="M+">0</span>
+      <span class="stat-lbl">Views Generated</span>
+    </div>
+    <div class="stat-item reveal d2">
+      <span class="stat-num" data-target="48" data-suffix="hr">0</span>
+      <span class="stat-lbl">Avg. Turnaround</span>
+    </div>
+    <div class="stat-item reveal d3">
+      <span class="stat-num" data-target="97" data-suffix="%">0</span>
+      <span class="stat-lbl">Client Retention</span>
+    </div>
+  </div>
 </section>
 
 <!-- ============================================================
@@ -1888,7 +1857,7 @@ footer {
       </div>
     </div>
 
-    <a href="mailto:contact@bejucreative.com" class="btn-primary lg">Get In Touch →</a>
+    <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="btn-primary lg">Send An Inquiry →</a>
     <div style="text-align:center">
       <span class="reply-note"><span class="reply-dot"></span>Replies within 24 hours</span>
     </div>
@@ -2128,19 +2097,15 @@ footer {
     <div class="eyebrow center">Get Started</div>
     <h2 class="fcta-h2">Got footage that deserves an <em>audience?</em></h2>
     <p class="fcta-sub">We're selective about who we work with. If you're serious about growth, let's talk.</p>
-    <a href="mailto:contact@bejucreative.com" class="btn-primary lg">Contact Us Now →</a>
+    <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="btn-primary lg">Contact Us Now →</a>
     <div style="text-align:center">
       <span class="reply-note"><span class="reply-dot"></span>Replies within 24 hours</span>
     </div>
     <br>
-    <a href="mailto:contact@bejucreative.com" class="fcta-email">contact@bejucreative.com →</a>
+    <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="fcta-email">bejusipe@gmail.com →</a>
   </div>
   <div class="social-row reveal d2">
-    <a href="#">Instagram</a>
-    <span>·</span>
-    <a href="#">TikTok</a>
-    <span>·</span>
-    <a href="mailto:contact@bejucreative.com">Email</a>
+    <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry">Email</a>
   </div>
 </section>
 
@@ -2154,9 +2119,7 @@ footer {
     </a>
     <p class="footer-copy">© 2026 — Built for growth.</p>
     <div class="footer-links">
-      <a href="#">Instagram</a>
-      <a href="#">TikTok</a>
-      <a href="mailto:contact@bejucreative.com">Email</a>
+      <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry">Email</a>
     </div>
   </div>
 </footer>
@@ -2164,7 +2127,16 @@ footer {
 <!-- Sticky mobile CTA — existing offer + existing microcopy, shown after the hero -->
 <div class="sticky-cta" id="stickyCta" aria-hidden="true">
   <span class="sticky-cta-text">Double your views,<br><em>or you don't pay.</em></span>
-  <a href="mailto:contact@bejucreative.com" class="btn-primary">Get In Touch →</a>
+  <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="btn-primary">Get In Touch →</a>
+</div>
+
+<!-- Post-view prompt — one gentle nudge after watching a couple of videos -->
+<div class="view-prompt" id="viewPrompt" aria-hidden="true" role="dialog" aria-label="Contact prompt">
+  <span class="view-prompt-text">Like what you see? <em>Let's talk.</em></span>
+  <a href="mailto:bejusipe@gmail.com?subject=Portfolio%20Inquiry" class="btn-primary" id="viewPromptBtn">Get In Touch</a>
+  <button class="view-prompt-close" id="viewPromptClose" aria-label="Dismiss">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
 </div>
 
 <!-- ============================================================
@@ -2178,7 +2150,7 @@ document.addEventListener('mousemove', e => {
   curX = e.clientX; curY = e.clientY;
   if (!curTicking) {
     requestAnimationFrame(() => {
-      cur.style.transform = 'translate3d(' + (curX) + 'px,' + (curY) + 'px,0) translate(-50%,-50%)';
+      cur.style.transform = 'translate3d(' + curX + 'px,' + curY + 'px,0) translate(-50%,-50%)';
       curTicking = false;
     });
     curTicking = true;
@@ -2232,7 +2204,7 @@ const revObs = new IntersectionObserver((entries) => {
     if (e.isIntersecting) {
       e.target.classList.add('in');
       revObs.unobserve(e.target);
-      /* release GPU hint after animation completes (0.9s + up to 0.5s stagger delay) */
+      /* release GPU hint after animation completes (0.9s + up to 0.6s stagger delay) */
       setTimeout(() => { e.target.style.willChange = 'auto'; }, 1600);
     }
   });
@@ -2271,37 +2243,11 @@ if (pLine) {
   pObs.observe(document.getElementById('process'));
 }
 
-/* ── Work track: drag-to-scroll + arrow buttons ── */
-const ws = document.getElementById('workScroll');
-let isDragging = false, dragStartX = 0, dragScrollLeft = 0;
-ws.addEventListener('mousedown', e => {
-  isDragging = true;
-  dragStartX = e.pageX - ws.offsetLeft;
-  dragScrollLeft = ws.scrollLeft;
-  ws.style.cursor = 'grabbing';
-});
-ws.addEventListener('mouseleave', () => { isDragging = false; ws.style.cursor = 'grab'; });
-ws.addEventListener('mouseup',    () => { isDragging = false; ws.style.cursor = 'grab'; });
-let dragTicking = false, dragMoveX = 0;
-ws.addEventListener('mousemove',  e => {
-  if (!isDragging) return;
-  e.preventDefault();
-  dragMoveX = e.pageX;
-  if (!dragTicking) {
-    requestAnimationFrame(() => {
-      ws.scrollLeft = dragScrollLeft - (dragMoveX - ws.offsetLeft - dragStartX) * 1.25;
-      dragTicking = false;
-    });
-    dragTicking = true;
-  }
-});
-document.getElementById('wPrev').addEventListener('click', () => ws.scrollBy({ left: -280, behavior: 'smooth' }));
-document.getElementById('wNext').addEventListener('click', () => ws.scrollBy({ left:  280, behavior: 'smooth' }));
+/* ── Legacy scroll-rail drag handlers removed — the 3D carousel positions cards
+   with transforms (work-scroll is overflow:hidden, so scrollLeft was a no-op
+   that still burned CPU on every touchmove) ── */
 
-/* Touch: native momentum scrolling handles the rail (touch-action: pan-x in CSS) —
-   no JS touchmove scroll-hijack, which double-scrolled and dropped frames on mobile */
-
-/* ── Pause marquee/logo tickers while off-screen ── */
+/* ── Pause marquee ticker while off-screen ── */
 const tickerObs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused';
@@ -2313,81 +2259,214 @@ document.querySelectorAll('.marquee-track, .logos-track').forEach(t => tickerObs
    VIDEO PLAYBACK — PRODUCTION QUALITY
 ═══════════════════════════════════════════════ */
 
+/* ── Strip non-encoded multi-res sources — only the original .mp4 exists right now ── */
+document.querySelectorAll('.reel-video').forEach(v => {
+  const srcs = [...v.querySelectorAll('source')];
+  if (srcs.length > 1) {
+    srcs.slice(0, -1).forEach(s => s.remove());
+    v.load();
+  }
+});
+
 /* ── Slow-connection detection ── */
 if (navigator.connection && /(2g|slow-2g|3g)/.test(navigator.connection.effectiveType)) {
   document.documentElement.classList.add('slow-connection');
 }
 
-/* ── Lazy-upgrade preload for off-screen cards (3+) ── */
+/* ── Set preload metadata on all videos ── */
 const workCards = document.querySelectorAll('.reel-wrap');
-const preloadUpgradeObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    const v = e.target.querySelector('.reel-video');
-    if (v && e.isIntersecting && v.preload === 'none') {
-      v.preload = 'metadata';
-      v.load();
-    }
-  });
-}, { threshold: 0.1, rootMargin: '200px' });
-workCards.forEach((card, i) => { if (i >= 2) preloadUpgradeObs.observe(card); });
+workCards.forEach(wrap => {
+  const v = wrap.querySelector('.reel-video');
+  if (v) v.preload = 'metadata';
+});
 
-/* ── Hover preview (desktop only — skip entirely on touch) ── */
-const isTouchDevice = window.matchMedia('(hover: none)').matches;
-let wpHoverTimer = null;
-let wpCurrentPlaying = null;
+/* ── Carousel state — start at middle so 2 cards show on each side ── */
+let carIdx = Math.floor((workCards.length - 1) / 2);
 
-if (!isTouchDevice) {
-  workCards.forEach(wrap => {
-    const card = wrap.querySelector('.reel-card');
-    const v    = wrap.querySelector('.reel-video');
-    if (!v) return;
-
-    wrap.addEventListener('mouseenter', () => {
-      clearTimeout(wpHoverTimer);
-      wpHoverTimer = setTimeout(() => {
-        if (wpCurrentPlaying && wpCurrentPlaying !== v) {
-          wpCurrentPlaying.pause();
-          wpCurrentPlaying.currentTime = 0;
-          wpCurrentPlaying.closest('.reel-card')?.classList.remove('is-playing');
-        }
-        v.currentTime = 0;
-        v.play().catch(() => {});
-        wpCurrentPlaying = v;
-        card?.classList.add('is-playing');
-      }, 50);
-    });
-
-    wrap.addEventListener('mouseleave', () => {
-      clearTimeout(wpHoverTimer);
-      v.pause();
-      v.currentTime = 0;
-      card?.classList.remove('is-playing');
-      if (wpCurrentPlaying === v) wpCurrentPlaying = null;
-    });
-  });
+function getOffsets() {
+  const w = window.innerWidth;
+  return w < 480 ? { o1: 195, o2: 325, r1: 8  } :
+         w < 768 ? { o1: 250, o2: 415, r1: 10 } :
+                   { o1: 315, o2: 515, r1: 13  };
 }
 
-/* ── Pause off-screen videos ── */
-const wpOffscreenObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    const v = e.target;
-    if (!e.isIntersecting && !v.paused) {
-      v.pause();
-      v.currentTime = 0;
-      v.closest('.reel-card')?.classList.remove('is-playing');
-      if (wpCurrentPlaying === v) wpCurrentPlaying = null;
+function positionCards() {
+  const { o1, o2, r1 } = getOffsets();
+  workCards.forEach((wrap, i) => {
+    const off = i - carIdx;
+    const abs = Math.abs(off);
+    const v   = wrap.querySelector('.reel-video');
+    const mb  = wrap.querySelector('.reel-mute');
+    let tx, sc, br, op, zi;
+
+    if (off === 0) {
+      [tx, sc, br, op, zi] = [0, 1, 1, 1, 10];
+      wrap.classList.add('reel--active');
+      if (mb) mb.style.opacity = '1';
+      if (v) v.play().catch(() => {});
+    } else if (abs === 1) {
+      tx = off > 0 ? o1 : -o1;
+      [sc, br, op, zi] = [0.76, 0.52, 1, 7];
+      wrap.classList.remove('reel--active');
+      if (mb) mb.style.opacity = '0';
+      if (v) { v.pause(); v.currentTime = 0; }
+    } else if (abs === 2) {
+      tx = off > 0 ? o2 : -o2;
+      [sc, br, op, zi] = [0.6, 0.28, 0.85, 4];
+      wrap.classList.remove('reel--active');
+      if (mb) mb.style.opacity = '0';
+      if (v) { v.pause(); v.currentTime = 0; }
+    } else {
+      tx = off > 0 ? o2 + 150 : -(o2 + 150);
+      [sc, br, op, zi] = [0.5, 0.1, 0, 1];
+      wrap.classList.remove('reel--active');
+      if (mb) mb.style.opacity = '0';
+      if (v) { v.pause(); v.currentTime = 0; }
+    }
+    const ry = off === 0 ? 0 : off > 0 ? -r1 : r1;
+    wrap.style.transform     = `translate3d(${tx}px,0,0) scale(${sc}) rotateY(${ry}deg)`;
+    wrap.style.setProperty('--dim', (1 - br).toFixed(2));
+    wrap.style.opacity       = op;
+    wrap.style.zIndex        = zi;
+    wrap.style.pointerEvents = abs <= 2 ? 'auto' : 'none';
+  });
+  document.querySelectorAll('.carousel-dot').forEach((d, i) =>
+    d.classList.toggle('active', i === carIdx));
+}
+
+let navLocked = false;
+function carNav(dir, steps = 1) {
+  if (navLocked) return;
+  navLocked = true;
+  setTimeout(() => { navLocked = false; }, 450);
+  workCards.forEach(w => { const v = w.querySelector('.reel-video'); if (v && !v.paused) v.pause(); });
+  carIdx = ((carIdx + dir * steps) % workCards.length + workCards.length) % workCards.length;
+  positionCards();
+}
+
+/* ── Mute buttons ── */
+const MUTE_PATH   = 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z';
+const UNMUTE_PATH = 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z';
+workCards.forEach(wrap => {
+  const card = wrap.querySelector('.reel-card');
+  const v    = wrap.querySelector('.reel-video');
+  if (!card || !v) return;
+  const btn = document.createElement('button');
+  btn.className = 'reel-mute';
+  btn.setAttribute('aria-label', 'Toggle mute');
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path class="mp" d="${UNMUTE_PATH}"/></svg>`;
+  card.appendChild(btn);
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    v.muted = !v.muted;
+    btn.querySelector('.mp').setAttribute('d', v.muted ? MUTE_PATH : UNMUTE_PATH);
+  });
+});
+
+/* ── Dots ── */
+const dotsEl = document.getElementById('carouselDots');
+workCards.forEach((_, i) => {
+  const d = document.createElement('button');
+  d.className = 'carousel-dot';
+  d.setAttribute('aria-label', `Video ${i + 1}`);
+  d.addEventListener('click', () => { carIdx = i; positionCards(); });
+  dotsEl.appendChild(d);
+});
+
+/* ── Arrows ── */
+document.getElementById('carPrev').addEventListener('click', () => carNav(-1));
+document.getElementById('carNext').addEventListener('click', () => carNav(1));
+document.getElementById('wPrev').addEventListener('click',  () => carNav(-1));
+document.getElementById('wNext').addEventListener('click',  () => carNav(1));
+
+/* ── Touch swipe — velocity-aware: a fast or long fling jumps 2 cards in one motion ── */
+const workTrack = document.querySelector('.work-track');
+let tsX = 0, tsT = 0;
+workTrack.addEventListener('touchstart', e => { tsX = e.touches[0].clientX; tsT = performance.now(); }, { passive: true });
+workTrack.addEventListener('touchend',   e => {
+  const dx = e.changedTouches[0].clientX - tsX;
+  if (Math.abs(dx) <= 50) return;
+  const vel   = Math.abs(dx) / Math.max(1, performance.now() - tsT); // px per ms
+  const steps = (vel > 0.65 || Math.abs(dx) > 170) ? 2 : 1;
+  carNav(dx > 0 ? -1 : 1, steps);
+}, { passive: true });
+
+/* ── Keyboard (skipped while a video is fullscreen so arrows can seek) ── */
+document.addEventListener('keydown', e => {
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); carNav(-1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); carNav(1); }
+});
+
+/* ── Pause when section scrolls away ── */
+const wpOffscreenObs = new IntersectionObserver(entries => {
+  if (!entries[0].isIntersecting)
+    workCards.forEach(w => { const v = w.querySelector('.reel-video'); if (v) { v.pause(); v.currentTime = 0; } });
+}, { threshold: 0.05 });
+wpOffscreenObs.observe(document.querySelector('.work-scroll'));
+
+/* ── Click: center → fullscreen · side → navigate ── */
+workCards.forEach((wrap, i) => {
+  wrap.addEventListener('click', () => {
+    if (i === carIdx) {
+      const v = wrap.querySelector('.reel-video');
+      if (!v) return;
+      watched.add(i);
+      hidePrompt();
+      v.muted = false;
+      const fs = v.requestFullscreen || v.webkitRequestFullscreen || v.mozRequestFullScreen;
+      if (fs) fs.call(v);
+      v.play().catch(() => {});
+    } else {
+      carIdx = i; positionCards();
     }
   });
-}, { threshold: 0.25 });
-document.querySelectorAll('.reel-video').forEach(v => wpOffscreenObs.observe(v));
+});
 
 /* ── Pause all when tab hidden ── */
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    document.querySelectorAll('.reel-video').forEach(v => { v.pause(); v.currentTime = 0; });
-    wpCurrentPlaying = null;
-  }
+  if (document.hidden)
+    workCards.forEach(w => { const v = w.querySelector('.reel-video'); if (v) { v.pause(); v.currentTime = 0; } });
 });
+
+/* ── Fullscreen exit: pause all, re-play center card only ── */
+['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      workCards.forEach((w, i) => {
+        const v = w.querySelector('.reel-video');
+        if (!v) return;
+        if (i !== carIdx) { v.pause(); v.currentTime = 0; }
+        else v.play().catch(() => {});
+      });
+      maybeShowPrompt();
+    }
+  });
+});
+
+/* ── Post-viewing prompt: one gentle nudge after 2 videos watched fullscreen.
+   Desktop only — mobile already has the sticky CTA bar. ── */
+const viewPrompt = document.getElementById('viewPrompt');
+const watched = new Set();
+let promptShown = false, promptTimer = 0;
+function maybeShowPrompt() {
+  if (promptShown || watched.size < 2) return;
+  if (window.innerWidth < 769) return;
+  promptShown = true;
+  viewPrompt.classList.add('show');
+  viewPrompt.setAttribute('aria-hidden', 'false');
+  promptTimer = setTimeout(hidePrompt, 14000);
+}
+function hidePrompt() {
+  clearTimeout(promptTimer);
+  viewPrompt.classList.remove('show');
+  viewPrompt.setAttribute('aria-hidden', 'true');
+}
+document.getElementById('viewPromptClose').addEventListener('click', hidePrompt);
+document.getElementById('viewPromptBtn').addEventListener('click', hidePrompt);
+
+/* ── Initial layout ── */
+positionCards();
 </script>
 </body>
 </html>
